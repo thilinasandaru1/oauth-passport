@@ -13,14 +13,23 @@ passport.use(
       clientSecret: keys.google.clientSecret
     },
     (accessToken, refreshToken, profile, done) => {
-      new User({
-        googleId: profile.id,
-        username: profile.displayName
-      })
-        .save()
-        .then(newUser => {
-          console.log("new user created: ", newUser);
-        });
+      // check if user already exists on our db
+      User.findOne({ googleId: profile.id }).then(currentUser => {
+        if (currentUser) {
+          // already have the user
+          console.log("user is: ", currentUser);
+        } else {
+          // if not, create user in our db
+          new User({
+            googleId: profile.id,
+            username: profile.displayName
+          })
+            .save()
+            .then(newUser => {
+              console.log("new user created: ", newUser);
+            });
+        }
+      });
     }
   )
 );
